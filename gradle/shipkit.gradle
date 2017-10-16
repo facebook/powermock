@@ -1,0 +1,65 @@
+//This file was created automatically and is intended to be checked-in.
+shipkit {
+    gitHub.repository = "powermock/powermock"
+
+    gitHub.readOnlyAuthToken = "0f1df49ac11364f542c9d3e6735ae64d010ab8e3"
+
+    git.user = "PowerMock Release Tools"
+    git.email = "<powermock.release.tools@outlook.com>"
+    git.releasableBranchRegex = "release/.+"  // 'release/2.x', 'release/3.x', etc.
+
+    git.tagPrefix = "powermock-"
+
+    gitHub.writeAuthUser = System.getenv("GH_USER")
+    gitHub.writeAuthToken = System.getenv("GH_WRITE_TOKEN")
+
+    def buildNo = System.getenv("TRAVIS_BUILD_NUMBER")
+    git.commitMessagePostfix = buildNo? "by CI build $buildNo\n\n[ci skip-release]" : "by local build\n\n[ci skip-release]"
+
+    releaseNotes.file = "docs/release-notes/official.md"
+    releaseNotes.labelMapping = [
+            'epic': "Major changes",
+            'bug': "Bugfixes",
+            'enhancement': "Enhancements",
+            'android': "Android support",
+            'kotlin': "Kotlin support",
+            'component:mockito': "Mockito support",
+            'component:easymock': "EasyMock support",
+            'wiki': 'Documentation',
+            'regression': 'Fix regression bug'
+    ]
+    releaseNotes.ignoreCommitsContaining = ["[ci skip]"]
+}
+
+allprojects {
+    plugins.withId("org.shipkit.bintray") {
+        bintray {
+            user = System.getenv('BINTRAY_USER')
+            key = System.getenv("BINTRAY_API_KEY")
+
+            pkg {
+                repo = repoName(project)
+
+                userOrg ='powermock'
+                name = 'powermock'
+                desc = project.description
+                websiteUrl = 'http://powermock.org'
+                issueTrackerUrl = 'https://powermock.com/powermock/powermock/issues'
+                vcsUrl = 'https://github.com/powermock/powermock.git'
+                licenses = ['Apache-2.0']
+                labels = ['java', 'mock', 'mocking', 'tests']
+
+                publicDownloadNumbers = true
+            }
+        }
+    }
+}
+
+
+static String repoName(project) {
+    if (project.hasProperty("bintrayRepo")) {
+        return project.ext.bintrayRepo
+    } else {
+        return 'maven'
+    }
+}
